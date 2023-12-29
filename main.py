@@ -10,7 +10,7 @@ class Window(QMainWindow, Ui_MainWindow):
         super().__init__()
         self.setupUi(self)
         self.spisok = []
-        self.con = sqlite3.connect("2023.12.18-08.39.28_manual.db")
+        self.con = sqlite3.connect("2023.12.28-10.05.38_manual.db")
         self.pushButton.clicked.connect(self.run)
 
     def run(self):
