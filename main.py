@@ -83,6 +83,7 @@ class Window(QMainWindow, Ui_MainWindow):
         except Exception:
             self.label_4.setText('Введите значения полей')
 
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = Window()
