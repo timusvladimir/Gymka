@@ -93,7 +93,6 @@ class Window(QMainWindow, Ui_MainWindow):
             y1 = x
             # Квадратичная зависимость
             y2 = [i ** 2 for i in x]
-
             # Построение графиков
             plt.figure(figsize=(9, 9))
             plt.subplot(2, 1, 1)
