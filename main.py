@@ -72,28 +72,36 @@ class Window(QMainWindow, Ui_MainWindow):
 
             cur = self.con.cursor()
             result = cur.execute(request).fetchall()
+
+            file_export = 'export_data.xlsx'
+            wb = openpyxl.Workbook()
+            ws = wb.active
+
             self.tableWidget.setColumnCount(len(result[0]))
             columns = [column[0] for column in cur.description]
             self.tableWidget.setHorizontalHeaderLabels(columns)
+
+            ws.append(columns)
+
+            spisok = []
+
             self.tableWidget.setRowCount(len(result))
             for i, elem in enumerate(result):
+                ws.append(spisok)
+                spisok.clear()
                 for j, val in enumerate(elem):
                     if j == 2:
                         val = datetime.datetime.fromtimestamp(val / 1000.0, tz=datetime.timezone.utc)
+                        val = val.strftime('%x %X')
+                    spisok.append(val)
                     self.tableWidget.setItem(i, j, QTableWidgetItem(str(val)))
             self.tableWidget.resizeColumnsToContents()
             self.lineEdit_1.clear()
             self.lineEdit_2.clear()
             self.lineEdit_3.clear()
-
-            file_export = 'export_data.xlsx'
-            wb = openpyxl.load_workbook(file_export)
-            ws = wb['Лист1']
-
-            data = [[row * col for col in range(1, 10)] for row in range(1, 31)]
-            for row in data:
-                ws.append(row)
-
+       #     data = [[row * col for col in range(1, 10)] for row in range(1, 31)]
+         #   for row in data:
+          #      ws.append(row)
             wb.save(file_export)
             wb.close()
 
