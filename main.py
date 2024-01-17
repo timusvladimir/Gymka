@@ -89,7 +89,11 @@ class Window(QMainWindow, Ui_MainWindow):
             file_export = 'export_data.xlsx'
             wb = openpyxl.load_workbook(file_export)
             ws = wb['Лист1']
-            ws['A1'] = 'test'
+
+            data = [[row * col for col in range(1, 10)] for row in range(1, 31)]
+            for row in data:
+                ws.append(row)
+
             wb.save(file_export)
             wb.close()
 
