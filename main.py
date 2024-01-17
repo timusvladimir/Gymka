@@ -3,7 +3,9 @@ import sqlite3
 import datetime
 import matplotlib.pyplot as plt
 import numpy as np
+import openpyxl
 import re
+
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
 from gymka_ui import Ui_MainWindow
 
@@ -63,10 +65,10 @@ class Window(QMainWindow, Ui_MainWindow):
             try:
                 int(self.search_1)
                 if self.search_1 == '':
-                    request = "SELECT _id,name,startDateTime,setsAmount FROM training".format(self.search_1)
+                    request = "SELECT _id,name,startDateTime,setsAmount,repsAmount FROM training".format(self.search_1)
             except:
                 if self.search_1 == '':
-                    request = "SELECT _id,name,startDateTime,setsAmount FROM training".format(self.search_1)
+                    request = "SELECT _id,name,startDateTime,setsAmount,repsAmount FROM training".format(self.search_1)
 
             cur = self.con.cursor()
             result = cur.execute(request).fetchall()
@@ -83,6 +85,14 @@ class Window(QMainWindow, Ui_MainWindow):
             self.lineEdit_1.clear()
             self.lineEdit_2.clear()
             self.lineEdit_3.clear()
+
+            file_export = 'export_data.xlsx'
+            wb = openpyxl.load_workbook(file_export)
+            ws = wb['Лист1']
+            ws['A1'] = 'test'
+            wb.save(file_export)
+            wb.close()
+
         except Exception:
             self.label_4.setText('Введите значения полей')
 
