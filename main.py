@@ -15,7 +15,7 @@ class Window(QMainWindow, Ui_MainWindow):
         super().__init__()
         self.setupUi(self)
         self.spisok = []
-        self.con = sqlite3.connect("2023.12.30-15.38.28_manual.db")
+        self.con = sqlite3.connect("2024.01.23-10.12.30_manual.db")
         self.pushButton_1.clicked.connect(self.run_button1)
         self.pushButton_2.clicked.connect(self.run_button2)
         self.pushButton_3.clicked.connect(self.run_button3)
@@ -102,6 +102,7 @@ class Window(QMainWindow, Ui_MainWindow):
        #     data = [[row * col for col in range(1, 10)] for row in range(1, 31)]
          #   for row in data:
           #      ws.append(row)
+
             wb.save(file_export)
             wb.close()
 
