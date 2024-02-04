@@ -132,10 +132,13 @@ class Window(QMainWindow, Ui_MainWindow):
                 time_x.append(key_to_data)
                 data_y.append(value)
 
-            fig, ax = plt.subplots()
-            ax.plot(time_x, data_y, label='amounts')
+            fig, ax = plt.subplots(figsize=(14, 6))
+            ax.plot(time_x, data_y, 'o-r', label='подходы')
             ax.set_title('График количества подходов', fontsize=16)
             ax.set_xlabel('time', fontsize=14)
+            ax.legend(bbox_to_anchor=(1, 0.6))
+            ax.grid(True)
+
             plt.show()
 
         except Exception:
