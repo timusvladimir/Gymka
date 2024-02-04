@@ -18,7 +18,7 @@ class Window(QMainWindow, Ui_MainWindow):
         super().__init__()
         self.setupUi(self)
         self.spisok = []
-        self.con = sqlite3.connect("2024.01.23-10.12.30_manual.db")
+        self.con = sqlite3.connect("2024.02.04-09.46.57_manual.db")
         self.pushButton_1.clicked.connect(self.run_button1)
         self.pushButton_2.clicked.connect(self.run_button2)
         self.pushButton_3.clicked.connect(self.run_button3)
@@ -58,8 +58,11 @@ class Window(QMainWindow, Ui_MainWindow):
 
     def run_button2(self):
         try:
+            slovar = {}
             spisokdata = []
             spisoktime = []
+            time_x = []
+            data_y = []
 
             self.tableWidget.clear
             self.search_1 = ''
@@ -97,11 +100,15 @@ class Window(QMainWindow, Ui_MainWindow):
                 spisok.clear()
                 for j, val in enumerate(elem):
                     if j == 2:
+                        timedata = val
                         val = datetime.datetime.fromtimestamp(val / 1000.0, tz=datetime.timezone.utc)
                         val = val.strftime('%x %X')
+
                         spisoktime.append(val)
                     if j == 3:
+                        value = val
                         spisokdata.append(val)
+                        slovar[timedata] = value
                     spisok.append(val)
                     self.tableWidget.setItem(i, j, QTableWidgetItem(str(val)))
             self.tableWidget.resizeColumnsToContents()
@@ -115,11 +122,20 @@ class Window(QMainWindow, Ui_MainWindow):
             wb.save(file_export)
             wb.close()
 
-            x = spisoktime
-            y1 = spisokdata
+            sorted_slovar = dict(sorted(slovar.items()))
+            #time_x = spisoktime
+            #data_y = spisokdata
+
+            for key, value in sorted_slovar.items():
+                key_to_data = datetime.datetime.fromtimestamp(key / 1000.0, tz=datetime.timezone.utc)
+                key_to_data = key_to_data.strftime('%x %X')
+                time_x.append(key_to_data)
+                data_y.append(value)
 
             fig, ax = plt.subplots()
-            ax.plot(x, y1, label='amounts')
+            ax.plot(time_x, data_y, label='amounts')
+            ax.set_title('График количества подходов', fontsize=16)
+            ax.set_xlabel('time', fontsize=14)
             plt.show()
 
         except Exception:
