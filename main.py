@@ -4,6 +4,7 @@ import datetime
 import matplotlib.pyplot as plt
 from matplotlib.ticker import (MultipleLocator, FormatStrFormatter,
 AutoMinorLocator)
+import matplotlib.dates
 
 import numpy as np
 import openpyxl
@@ -18,7 +19,7 @@ class Window(QMainWindow, Ui_MainWindow):
         super().__init__()
         self.setupUi(self)
         self.spisok = []
-        self.con = sqlite3.connect("2024.02.04-09.46.57_manual.db")
+        self.con = sqlite3.connect("2024.02.04-14.40.23_manual.db")
         self.pushButton_1.clicked.connect(self.run_button1)
         self.pushButton_2.clicked.connect(self.run_button2)
         self.pushButton_3.clicked.connect(self.run_button3)
@@ -128,7 +129,7 @@ class Window(QMainWindow, Ui_MainWindow):
 
             for key, value in sorted_slovar.items():
                 key_to_data = datetime.datetime.fromtimestamp(key / 1000.0, tz=datetime.timezone.utc)
-                key_to_data = key_to_data.strftime('%x %X')
+              #  key_to_data = key_to_data.strftime('%x')
                 time_x.append(key_to_data)
                 data_y.append(value)
 
@@ -136,9 +137,20 @@ class Window(QMainWindow, Ui_MainWindow):
             ax.plot(time_x, data_y, 'o-r', label='подходы')
             ax.set_title('График количества подходов', fontsize=16)
             ax.set_xlabel('time', fontsize=14)
-            ax.legend(bbox_to_anchor=(1, 0.6))
-            ax.grid(True)
+            # Повернем метки рисок на 55 градусов
+            ax.tick_params(axis="x", labelrotation=55)
+            # Изменим формат календарных данных
+            ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter("%d.%m.%Y"))
 
+            # !!! Изменим локатор, используемый по умолчанию
+            locator = matplotlib.dates.MonthLocator()
+            ax.xaxis.set_major_locator(locator)
+
+            ax.legend(bbox_to_anchor=(1, 0.6))
+
+            # Отмасштабируем график, чтобы в окно уместились повернутые надписи
+            plt.tight_layout()
+            plt.grid(True)
             plt.show()
 
         except Exception:
