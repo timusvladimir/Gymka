@@ -58,6 +58,9 @@ class Window(QMainWindow, Ui_MainWindow):
 
     def run_button2(self):
         try:
+            spisokdata = []
+            spisoktime = []
+
             self.tableWidget.clear
             self.search_1 = ''
             self.search_2 = ''
@@ -96,6 +99,9 @@ class Window(QMainWindow, Ui_MainWindow):
                     if j == 2:
                         val = datetime.datetime.fromtimestamp(val / 1000.0, tz=datetime.timezone.utc)
                         val = val.strftime('%x %X')
+                        spisoktime.append(val)
+                    if j == 3:
+                        spisokdata.append(val)
                     spisok.append(val)
                     self.tableWidget.setItem(i, j, QTableWidgetItem(str(val)))
             self.tableWidget.resizeColumnsToContents()
@@ -108,6 +114,13 @@ class Window(QMainWindow, Ui_MainWindow):
 
             wb.save(file_export)
             wb.close()
+
+            x = spisoktime
+            y1 = spisokdata
+
+            fig, ax = plt.subplots()
+            ax.plot(x, y1, label='amounts')
+            plt.show()
 
         except Exception:
             self.label_4.setText('Введите значения полей')
