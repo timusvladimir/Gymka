@@ -51,3 +51,53 @@ plt.title('Распределение типов тренировок')
 
 plt.tight_layout()
 plt.show()
+
+# Количество тренировок по месяцам
+data['month'] = data['startDateTime'].dt.to_period('M')
+monthly_workouts = data['month'].value_counts().sort_index()
+
+plt.figure(figsize=(10, 5))
+monthly_workouts.plot(kind='bar')
+plt.xlabel('Месяц')
+plt.ylabel('Количество тренировок')
+plt.title('Распределение тренировок по месяцам')
+plt.xticks(rotation=45)
+plt.show()
+
+# Среднее значение нагрузки и времени по месяцам
+monthly_avg = data.groupby('month').agg({
+    'tonnage': 'mean',
+    'time': 'mean'
+}).reset_index()
+
+plt.figure(figsize=(12, 6))
+
+plt.subplot(2, 1, 1)
+plt.plot(monthly_avg['month'].astype(str), monthly_avg['tonnage'], marker='o', linestyle='-')
+plt.xlabel('Месяц')
+plt.ylabel('Средняя нагрузка')
+plt.title('Тренд нагрузки по месяцам')
+
+plt.subplot(2, 1, 2)
+plt.plot(monthly_avg['month'].astype(str), monthly_avg['time'], marker='o', linestyle='-')
+plt.xlabel('Месяц')
+plt.ylabel('Среднее время тренировки (мин)')
+plt.title('Тренд времени тренировки по месяцам')
+
+plt.tight_layout()
+plt.show()
+
+# Проверка на пропущенные значения
+missing_values = data.isnull().sum()
+print("Пропущенные значения:")
+print(missing_values)
+
+# Проверка на нулевые или некорректные значения
+zero_values = data[(data['exercisesAmount'] == 0) & (data['setsAmount'] == 0) & (data['repsAmount'] == 0)]
+print("Тренировки с нулевыми значениями:")
+print(zero_values)
+
+# Определение аномальных значений
+outliers = data[(data['tonnage'] > data['tonnage'].quantile(0.95)) | (data['time'] > data['time'].quantile(0.95))]
+print("Аномальные значения:")
+print(outliers)
