@@ -1,50 +1,68 @@
 import numpy as np
 import scipy.signal as signal
-
+import sympy as sp
 import matplotlib.pyplot as plt
 
-# Создание произвольного набора данных
-np.random.seed(0)  # устанавливает начальное значение (или "зерно") для генератора случайных чисел в библиотеке NumPy. Это позволяет обеспечить воспроизводимость результатов.
-frequency = np.linspace(1, 10, 1000)  # Частота от 1 до 10 ГГц
-intensity = abs(np.sin(frequency)) + abs(0.5 * np.random.normal(size=frequency.size))
-# делает следующее:
-#     np.sin(frequency): Вычисляет синус для каждого значения в массиве frequency. Так как frequency состоит из значений от 1 до 10, np.sin(frequency) возвращает массив синусов для этих значений.
-#     np.random.normal(size=frequency.size): Генерирует массив случайных чисел, распределённых по нормальному закону (среднее 0 и стандартное отклонение 1). Размер этого массива равен количеству элементов в frequency.
-#     0.5 * np.random.normal(size=frequency.size): Умножает каждый элемент массива случайных чисел на 0.5, уменьшая его разброс.
-#     abs(...): Функция abs берёт абсолютные значения. Это гарантирует, что и значения синуса, и значения случайного шума будут неотрицательными.
-#     Суммирование: Наконец, результаты синуса и случайного шума складываются, создавая итоговый массив intensity, который представляет собой интенсивность с добавленным шумом.
-# Таким образом, вы получаете массив значений интенсивности, который имеет синусоидальную форму с шумом, что может отражать реальное поведение в данных микроволновой спектроскопии.
+# Функция для создания синусоидальных данных поглощения с шумом
+def generate_absorption_spectrum(frequency_range, noise_level=0.2):
+    frequency = np.linspace(frequency_range[0], frequency_range[1], 200)
+    # Создаем синусоидальную функцию поглощения
+    absorption = (
+        5 * np.sin(2 * np.pi * (frequency - frequency_range[0]) / (frequency_range[1] - frequency_range[0])) +
+        2 * np.sin(4 * np.pi * (frequency - frequency_range[0]) / (frequency_range[1] - frequency_range[0]))
+    )
+    absorption = np.clip(absorption, 0, None)  # Убрать отрицательные значения
+    absorption += noise_level * np.random.normal(size=frequency.size)  # Добавление шума
+    return frequency, absorption
 
-print(frequency, intensity)
+# Генерация данных для диапазона 105—150 ГГц
+frequency, absorption = generate_absorption_spectrum((105, 150))
 
 # Поиск пиков
-peaks, _ = signal.find_peaks(intensity, height=0)
-#выполняет поиск пиков в массиве intensity с помощью функции find_peaks из библиотеки scipy.signal. Давайте разберем, что она делает:
-#    signal.find_peaks(...): Эта функция находит локальные максимумы (пики) в одномерном массиве данных. Она анализирует значения и определяет, какие из них являются пиками на основе заданных параметров.
-#    intensity: Это массив значений интенсивности, в котором мы ищем пики. Обычно пики представляют собой точки, где значение интенсивности значительно выше, чем у соседних значений.
-#    height=0: Этот параметр задаёт минимальную высоту пика. В данном случае мы указываем, что нас интересуют все пики, высота которых больше 0. Это означает, что любые положительные пики будут учтены.
-#    peaks, _: Функция find_peaks возвращает два значения:
-#        peaks: массив индексов, где расположены пики.
-#        _: второй элемент (обычно) содержит дополнительные данные, такие как высота пиков, которые мы здесь не используем, поэтому мы можем просто записать его в _.
-#Таким образом, после выполнения этой строки кода переменная peaks будет содержать индексы всех найденных пиков в массиве intensity, которые соответствуют локальным максимумам. Вы можете использовать эти индексы для дальнейшего анализа или визуализации, например, выделяя пики на графике.
+peaks, _ = signal.find_peaks(absorption, height=0)
 
-print(peaks)
+# Анализ данных с использованием sympy
+x = sp.symbols('x')
+# Пример функции для подгонки, можно заменить на более сложную модель
+fit_function = 5 * sp.sin(2 * np.pi * (x - 105) / (150 - 105))
+fit_params = sp.solve(sp.Eq(absorption[peaks].mean(), fit_function.subs(x, frequency[peaks].mean())), x)
 
 # Построение графиков
-plt.figure(figsize=(10, 5))
-plt.plot(frequency, intensity, label='Интенсивность', color='blue')
-plt.scatter(frequency[peaks], intensity[peaks], color='red', label='Пики')
-#выполняет следующую задачу:
-#    plt.scatter(...): Эта функция из библиотеки matplotlib используется для создания графика разброса (scatter plot). В отличие от линейного графика, точки на графике разброса представляют собой отдельные значения.
-#    frequency[peaks]: Здесь мы используем массив peaks, чтобы извлечь частоты, соответствующие найденным пикам. Это означает, что мы берем только те элементы из массива frequency, которые находятся в индексах, указанных в peaks.
-#    intensity[peaks]: Аналогично, мы извлекаем значения интенсивности, которые соответствуют найденным пикам. Таким образом, мы получаем интенсивности пиков.
-#    color='red': Этот параметр задает цвет точек на графике. В данном случае все пики будут отображаться красным цветом.
-#    label='Пики': Это задает метку для графика, которая будет отображена в легенде. Позже вы можете вызвать plt.legend(), чтобы показать эту легенду на графике.
-#Таким образом, после выполнения этой строки кода на графике будут добавлены красные точки, указывающие на местоположение найденных пиков, что помогает визуально выделить эти важные участки данных.
-
+plt.figure(figsize=(12, 6))
+plt.plot(frequency, absorption, label='Поглощение (дБ/км)', color='blue')
+plt.scatter(frequency[peaks], absorption[peaks], color='red', label='Пики')
 plt.xlabel('Частота (ГГц)')
-plt.ylabel('Интенсивность')
-plt.title('Анализ данных спектроскопии')
+plt.ylabel('Поглощение (дБ/км)')
+plt.title('Спектр поглощения димера в водяном паре')
+plt.legend()
+plt.grid()
+plt.xlim(100, 160)  # Установка пределов по оси X для удобства
+plt.show()
+
+# Вывод параметров подгонки
+print(f"Параметры подгонки: {fit_params}")
+
+from scipy.optimize import curve_fit
+
+# Определение модели подгонки
+def model_function(f, amplitude, frequency_offset):
+    return amplitude * np.sin(2 * np.pi * (f - frequency_offset) / (150 - 105))
+
+# Подгонка данных
+initial_guess = [5, 125]  # Начальные предположения для параметров
+params, _ = curve_fit(model_function, frequency, absorption, p0=initial_guess)
+
+# Полученные параметры
+amplitude_fit, frequency_offset_fit = params
+print(f"Подогнанная амплитуда: {amplitude_fit}, Частота сдвига: {frequency_offset_fit}")
+
+# Построение графика
+plt.figure(figsize=(12, 6))
+plt.plot(frequency, absorption, label='Экспериментальные данные', color='blue')
+plt.plot(frequency, model_function(frequency, *params), label='Подгонка', color='orange')
+plt.xlabel('Частота (ГГц)')
+plt.ylabel('Поглощение (дБ/км)')
+plt.title('Подгонка зависимости поглощения от частоты')
 plt.legend()
 plt.grid()
 plt.show()
